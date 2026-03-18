@@ -1,0 +1,187 @@
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  background: var(--card-bg, rgba(255, 255, 255, 0.4));
+  backdrop-filter: var(--glass-backdrop, blur(20px));
+  -webkit-backdrop-filter: var(--glass-backdrop, blur(20px));
+  border-bottom: 1px solid var(--border-divider, rgba(0,0,0,0.05));
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .nav-container {
+    background: var(--card-bg, rgba(17, 25, 40, 0.5));
+    border-bottom: 1px solid var(--border-divider, rgba(255,255,255,0.05));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--text-main, #0f172a);
+  letter-spacing: -0.02em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .nav-brand { color: var(--text-main, #f8fafc); }
+}
+
+.nav-logo-cube {
+  width: 32px;
+  height: 32px;
+  background: var(--primary-gradient, linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 800;
+  font-size: 16px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.nav-links-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-link-item {
+  text-decoration: none;
+  color: var(--text-muted, #475569);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .nav-link-item { color: var(--text-muted, #94a3b8); }
+}
+
+.nav-link-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-main, #0f172a);
+}
+
+@media (prefers-color-scheme: dark) {
+  .nav-link-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main, #f8fafc);
+  }
+}
+
+.nav-link-item.active {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent-blue, #3b82f6);
+}
+
+@media (prefers-color-scheme: dark) {
+  .nav-link-item.active {
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--accent-purple, #818cf8);
+  }
+}
+
+/* Auth Section */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-nav-logout {
+  background: transparent;
+  color: var(--text-muted, #475569);
+  border: 1px solid var(--border-divider, rgba(0,0,0,0.1));
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn-nav-logout {
+    color: var(--text-muted, #94a3b8);
+    border-color: rgba(255,255,255,0.1);
+  }
+}
+
+.btn-nav-logout:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error, #ef4444);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.btn-nav-primary {
+  background: var(--text-main, #0f172a);
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn-nav-primary {
+    background: white;
+    color: #0f172a;
+  }
+}
+
+.btn-nav-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 900px) {
+  .nav-container {
+    padding: 16px;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+  }
+  
+  .nav-brand {
+    margin-right: auto;
+  }
+
+  .nav-actions {
+    margin-left: auto;
+  }
+
+  .nav-links-wrapper {
+    width: 100%;
+    justify-content: center;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    /* Hide scrollbar for clean look */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .nav-links-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+}
