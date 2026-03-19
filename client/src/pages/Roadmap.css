@@ -324,6 +324,19 @@
 .badge-level.easy { color: var(--success); background: var(--success-bg); }
 .badge-level.hard { color: var(--error); background: rgba(239, 68, 68, 0.1); }
 
+.badge-career-path { 
+  background: rgba(79, 70, 229, 0.1) !important; 
+  color: #4f46e5 !important; 
+}
+
+.task-note {
+  line-height: 1.4;
+  border-left: 2px solid var(--primary-gradient);
+  padding-left: 8px;
+  background: rgba(79, 70, 229, 0.03);
+  border-radius: 0 4px 4px 0;
+}
+
 /* Buttons */
 .task-actions {
   display: flex;

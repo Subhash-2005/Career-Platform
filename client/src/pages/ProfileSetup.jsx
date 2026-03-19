@@ -35,12 +35,16 @@ const ProfileSetup = () => {
       });
 
       // 2. Generate roadmap
-      await api.post("/roadmap/generate");
+      const res = await api.post("/roadmap/generate");
 
-      // 3. Navigate home
+      // 3. Navigate home or guidance
       setTimeout(() => {
         setSaving(false);
-        navigate("/home");
+        if (res.data?.mode === "school") {
+          navigate("/career-guidance");
+        } else {
+          navigate("/home");
+        }
       }, 600);
       
     } catch (err) {

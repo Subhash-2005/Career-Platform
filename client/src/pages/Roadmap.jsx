@@ -19,6 +19,11 @@ const Roadmap = () => {
     try {
       const res = await api.get("/roadmap").catch(() => ({ data: {} }));
 
+      if (res.data?.mode === "school") {
+        navigate("/career-guidance");
+        return;
+      }
+
       if (res.data?.roadmap?.roadmapDays) {
         setRoadmap(res.data.roadmap.roadmapDays);
       } else {
@@ -153,9 +158,14 @@ const Roadmap = () => {
                               <span style={{ textDecoration: task.completed ? 'line-through' : 'none' }}>
                                 {task.topic}
                               </span>
+                              {task.note && (
+                                <div className="task-note" style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px", fontStyle: "italic" }}>
+                                  {task.note}
+                                </div>
+                              )}
                             </div>
                             <div className="task-meta">
-                              <span className="badge badge-type">{task.type}</span>
+                              <span className={`badge badge-type badge-${task.type.replace(/\s+/g, '-')}`}>{task.type}</span>
                               {task.level && (
                                 <span className={`badge badge-level ${task.level.toLowerCase()}`}>
                                   {task.level}

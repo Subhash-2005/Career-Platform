@@ -4,10 +4,11 @@ const TaskSchema = new mongoose.Schema({
 
   topic: String,
   level: String,
+  note: String,
 
   type: {
     type: String,
-    enum: ["learning", "practice"]
+    enum: ["learning", "practice", "career-path"]
   },
 
   completed: {

@@ -19,13 +19,15 @@ exports.generateRoadmap = async (req, res) => {
 
     // ====================== SCHOOL USER ======================
     if (user.educationLevel === "school") {
-      const goalKey = (user.targetRole || "")
-        .toLowerCase()
-        .trim()
-        .replace("developer", "engineer");
+      const rawRole = (user.targetRole || "").toLowerCase().trim();
+      const engineerVariant = rawRole.replace("developer", "engineer");
+      const developerVariant = rawRole.replace("engineer", "developer");
 
       const guidance =
-        SCHOOL_CAREER_PATHS[goalKey] || {
+        SCHOOL_CAREER_PATHS[rawRole] ||
+        SCHOOL_CAREER_PATHS[engineerVariant] ||
+        SCHOOL_CAREER_PATHS[developerVariant] ||
+        {
           goal: user.targetRole,
           description: "Career guidance will be added soon.",
           paths: []
@@ -43,10 +45,29 @@ const topics = SCHOOL_FOUNDATION[classLevel] || SCHOOL_FOUNDATION[8];
 let roadmapDays = [];
 let day = 1;
 
+// If a path is selected, add short path milestone tasks at the start.
+const selectedPath = guidance.paths?.find(p => 
+  p.title.toLowerCase().trim() === (user.schoolPath || "").toLowerCase().trim()
+);
+if (selectedPath) {
+  selectedPath.steps.forEach((step, index) => {
+    roadmapDays.push({
+      day: day++,
+      tasks: [
+        {
+          topic: step,
+          type: "career-path",
+          completed: false,
+          note: `Path milestone ${index + 1} of ${selectedPath.steps.length}`
+        }
+      ],
+      status: "pending"
+    });
+  });
+}
+
 topics.forEach(topic => {
-
   for (let i = 0; i < topic.days; i++) {
-
     roadmapDays.push({
       day: day++,
       tasks: [
@@ -58,9 +79,7 @@ topics.forEach(topic => {
       ],
       status: "pending"
     });
-
   }
-
 });
 
       await Attempt.deleteMany({ userId: req.user });
