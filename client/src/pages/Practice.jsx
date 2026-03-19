@@ -105,6 +105,24 @@ const Practice = () => {
 
   const currentTopicStats = stats.find((s) => s.topic === topic);
 
+  const getLinkLabel = (url) => {
+    if (!url) return "🔗 View Resource";
+    try {
+      const hostname = new URL(url).hostname.replace("www.", "");
+      if (hostname.includes("leetcode")) return "🔗 Solve on LeetCode";
+      if (hostname.includes("aws")) return "🔗 AWS Documentation";
+      if (hostname.includes("mozilla")) return "🔗 MDN Web Docs";
+      if (hostname.includes("react")) return "🔗 React Docs";
+      if (hostname.includes("mongodb")) return "🔗 MongoDB Docs";
+      if (hostname.includes("nodejs")) return "🔗 Node.js Docs";
+      if (hostname.includes("github")) return "🔗 View on GitHub";
+      const domain = hostname.split('.')[0];
+      return `🔗 View on ${domain.charAt(0).toUpperCase() + domain.slice(1)}`;
+    } catch {
+      return "🔗 View Resource";
+    }
+  };
+
   return (
     <div className="practice-container">
       <Navbar />
@@ -154,7 +172,7 @@ const Practice = () => {
                 rel="noreferrer"
                 className="problem-link"
               >
-                🔗 Solve on LeetCode
+                {getLinkLabel(q.link)}
               </a>
 
               <div className="form-group">

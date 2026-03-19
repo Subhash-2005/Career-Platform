@@ -12,7 +12,9 @@ async function getAdaptivePractice(topic, attempts, problemBank) {
 
   // if user never attempted → start easy
   if (topicAttempts.length === 0) {
-    return topicProblems.filter(p => p.difficulty === "easy");
+    const easyProblems = topicProblems.filter(p => p.difficulty === "easy");
+    // Fallback: if there are no easy problems for this advanced topic, return whatever is available
+    return easyProblems.length > 0 ? easyProblems : topicProblems;
   }
 
   const correct = topicAttempts.filter(a => a.correct).length;
