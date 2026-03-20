@@ -1,0 +1,200 @@
+:root {
+  --admin-bg: #0f172a;
+  --admin-card-bg: rgba(30, 41, 59, 0.7);
+  --admin-primary: #8b5cf6; /* Violet */
+  --admin-secondary: #ec4899; /* Pink */
+  --admin-accent: #06b6d4; /* Cyan */
+  --admin-text: #f8fafc;
+  --admin-text-muted: #94a3b8;
+  --admin-border: rgba(255, 255, 255, 0.1);
+}
+
+.admin-container {
+  min-height: 100vh;
+  background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+  color: var(--admin-text);
+  padding: 40px 20px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.admin-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.admin-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(to right, #c084fc, #818cf8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Stats Overview Grid */
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.stat-card {
+  background: var(--admin-card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid var(--admin-border);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--admin-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+/* Main Analytics Grid */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 32px;
+}
+
+.admin-section {
+  background: var(--admin-card-bg);
+  backdrop-filter: blur(12px);
+  padding: 32px;
+  border-radius: 24px;
+  border: 1px solid var(--admin-border);
+}
+
+.section-h {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Ranking List */
+.admin-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.admin-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item-name {
+  font-weight: 600;
+  color: #fff;
+}
+
+.item-meta {
+  font-size: 0.8rem;
+  color: var(--admin-text-muted);
+}
+
+.item-score {
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.score-high { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+.score-mid { background: rgba(234, 179, 8, 0.2); color: #facc15; }
+.score-low { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+/* Trends List */
+.trend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-left: 4px solid var(--admin-primary);
+  background: rgba(139, 92, 246, 0.1);
+  margin-bottom: 12px;
+  border-radius: 0 8px 8px 0;
+}
+
+.trend-item.red { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+.trend-item.cyan { border-left-color: #06b6d4; background: rgba(6, 182, 212, 0.1); }
+
+.refresh-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--admin-border);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 900px) {
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+}
