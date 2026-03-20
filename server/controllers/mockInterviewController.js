@@ -1,63 +1,83 @@
 const Question = require("../models/Question");
 const MockInterview = require("../models/MockInterview");
+const User = require("../models/User");
+const INTERVIEW_QUESTIONS = require("../data/interviewQuestions");
 
 exports.startMockInterview = async (req, res) => {
-  const coding = await Question.find({ difficulty: "Easy" }).limit(2);
-  const cs = await Question.find({ topic: "DBMS" }).limit(1);
+  try {
+    const user = await User.findById(req.user);
+    const role = (user?.targetRole || "").toLowerCase();
+    
+    let techCategory = "general";
+    if (role.includes("frontend") || role.includes("react") || role.includes("ui") || role.includes("ux")) techCategory = "frontend";
+    else if (role.includes("backend") || role.includes("node") || role.includes("java") || role.includes("python")) techCategory = "backend";
+    else if (role.includes("machine") || role.includes("ml") || role.includes("data scientist")) techCategory = "ml";
 
-  const hr = [
-    {
-      _id: null,
-      title: "Tell me about yourself",
-      category: "hr"
-    }
-  ];
+    // Select 1 HR, 2 Technical, 1 Behavioral/General
+    const hr = INTERVIEW_QUESTIONS.general.find(q => q.category === "hr") || INTERVIEW_QUESTIONS.general[0];
+    const tech = INTERVIEW_QUESTIONS[techCategory].slice(0, 2);
+    const gen = INTERVIEW_QUESTIONS.general.find(q => q.id === "gen_3") || INTERVIEW_QUESTIONS.general[1];
 
-  res.json({
-    questions: [...coding, ...cs, ...hr]
-  });
+    const finalQuestions = [
+      { id: hr.id, title: hr.question, category: "hr", tips: hr.tips, keywords: hr.keywords },
+      ...tech.map(q => ({ id: q.id, title: q.question, category: "technical", tips: q.tips, keywords: q.keywords })),
+      { id: gen.id, title: gen.question, category: "behavioral", tips: gen.tips, keywords: gen.keywords }
+    ];
+
+    res.json({ questions: finalQuestions });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to start interview" });
+  }
 };
 
 exports.submitMockInterview = async (req, res) => {
   try {
     const { answers } = req.body;
-
-    // Validate input
-    if (!answers || !Array.isArray(answers) || answers.length === 0) {
-      return res.status(400).json({
-        message: "Invalid answers format. Expected non-empty array."
-      });
-    }
-
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({
-        message: "User not authenticated"
-      });
-    }
+    const user = await User.findById(req.user._id);
 
     let totalScore = 0;
     let strengths = [];
     let weaknesses = [];
 
-    answers.forEach(a => {
-      if (a.userAnswer && a.userAnswer.trim().length > 30) {
-        totalScore += 10;
-        strengths.push(a.category);
-      } else {
-        weaknesses.push(a.category);
+    const evaluatedAnswers = answers.map(ans => {
+      let score = 0;
+      const question = [...INTERVIEW_QUESTIONS.general, ...INTERVIEW_QUESTIONS.frontend, ...INTERVIEW_QUESTIONS.backend, ...INTERVIEW_QUESTIONS.ml]
+        .find(q => q.id === ans.id);
+
+      if (ans.userAnswer && ans.userAnswer.length > 10) {
+        score = 40; // Base score for providing an answer
+
+        // Keyword matching
+        if (question && question.keywords) {
+          const matchedKeywords = question.keywords.filter(kw => 
+            ans.userAnswer.toLowerCase().includes(kw.toLowerCase())
+          );
+          score += (matchedKeywords.length / question.keywords.length) * 60;
+        }
       }
+
+      const roundedScore = Math.round(score);
+      totalScore += roundedScore;
+
+      if (roundedScore >= 70) strengths.push(ans.category || "technical");
+      else if (roundedScore < 40) weaknesses.push(ans.category || "general");
+
+      return { 
+        questionId: ans.id,
+        userAnswer: ans.userAnswer,
+        category: ans.category,
+        score: roundedScore 
+      };
     });
 
-    // Remove duplicates
-    strengths = [...new Set(strengths)];
-    weaknesses = [...new Set(weaknesses)];
+    const finalScore = Math.round(totalScore / answers.length);
 
     const interview = await MockInterview.create({
-      userId: req.user._id,
-      questions: answers,
-      totalScore,
-      strengths,
-      weaknesses
+      userId: req.user,
+      questions: evaluatedAnswers,
+      totalScore: finalScore,
+      strengths: [...new Set(strengths)],
+      weaknesses: [...new Set(weaknesses)]
     });
 
     res.status(201).json({
@@ -65,10 +85,8 @@ exports.submitMockInterview = async (req, res) => {
       interview
     });
   } catch (error) {
-    console.error("Error submitting mock interview:", error);
-    res.status(500).json({
-      message: "Failed to submit mock interview",
-      error: error.message
-    });
+    console.error("SUBMIT INTERVIEW ERROR:", error);
+    res.status(500).json({ message: "Failed to process results" });
   }
 };
+

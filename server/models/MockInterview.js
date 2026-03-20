@@ -10,8 +10,7 @@ const MockInterviewSchema = new mongoose.Schema({
   questions: [
     {
       questionId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Question"
+        type: String
       },
       userAnswer: String,
       category: String, // coding / cs / hr

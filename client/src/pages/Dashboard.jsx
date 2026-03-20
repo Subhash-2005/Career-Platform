@@ -147,7 +147,7 @@ const Dashboard = () => {
               <text x="18" y="21.5" className="circle-score-text">{readinessScore}</text>
             </svg>
             <p style={{ marginTop: "12px", color: "var(--text-muted)", fontSize: "14px", fontWeight: 500 }}>
-              Based on {attempted} attempted questions
+              Based on practice & interview performance
             </p>
           </div>
 
@@ -157,12 +157,12 @@ const Dashboard = () => {
                <div className="stat-desc">Solved</div>
              </div>
              <div className="stat-item">
-               <div className="stat-num" style={{ color: "var(--warning)" }}>{attempted - solved}</div>
-               <div className="stat-desc">Learning</div>
+               <div className="stat-num" style={{ color: "#6366f1" }}>{stats?.latestInterviewScore || 0}%</div>
+               <div className="stat-desc">Interview</div>
              </div>
              <div className="stat-item">
-               <div className="stat-num">{totalQuestions}</div>
-               <div className="stat-desc">Total</div>
+               <div className="stat-num" style={{ color: "var(--warning)" }}>{attempted}</div>
+               <div className="stat-desc">Attempts</div>
              </div>
           </div>
         </section>

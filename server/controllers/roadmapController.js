@@ -7,6 +7,7 @@ const SKILL_TREES = require("../data/skillTrees");
 const getWeakTopics = require("../utils/weakTopicAnalyzer");
 const PROBLEM_BANK = require("../data/problemBank");
 const Attempt = require("../models/Attempt");
+const MockInterview = require("../models/MockInterview");
 const getAdaptivePractice = require("../utils/adaptivePracticeSelector");
 // ====================== GENERATE ROADMAP ======================
 exports.generateRoadmap = async (req, res) => {
@@ -16,6 +17,11 @@ exports.generateRoadmap = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
+    // Clear old data to start fresh for the new role
+    await Attempt.deleteMany({ userId: req.user });
+    await MockInterview.deleteMany({ userId: req.user });
+    await Roadmap.deleteMany({ userId: req.user });
 
     // ====================== SCHOOL USER ======================
     if (user.educationLevel === "school") {
@@ -81,11 +87,6 @@ topics.forEach(topic => {
     });
   }
 });
-
-      await Attempt.deleteMany({ userId: req.user });
-
-      await Roadmap.deleteMany({ userId: req.user });
-
 
       const roadmap = await Roadmap.create({
         userId: req.user,
@@ -319,10 +320,6 @@ else {
   }
 
 }
-    await Attempt.deleteMany({ userId: req.user });
-
-    await Roadmap.deleteMany({ userId: req.user });
-
     const roadmap = await Roadmap.create({
       userId: req.user,
       userMode: "college",

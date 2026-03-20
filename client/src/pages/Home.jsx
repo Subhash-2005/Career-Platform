@@ -257,6 +257,13 @@ const Home = () => {
               </div>
               
               <div className="mini-stat">
+                <span className="mini-stat-label">Interview Score</span>
+                <span className="mini-stat-value" style={{ color: "#6366f1" }}>
+                  {dashboard.latestInterviewScore || 0}%
+                </span>
+              </div>
+
+              <div className="mini-stat">
                 <span className="mini-stat-label">Readiness Score</span>
                 <span className="mini-stat-value" style={{ 
                   color: dashboard.readinessScore >= 75 ? "var(--success)" : dashboard.readinessScore >= 50 ? "var(--warning)" : "var(--error)" 

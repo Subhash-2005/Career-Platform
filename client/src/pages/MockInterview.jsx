@@ -6,51 +6,57 @@ import "./MockInterview.css";
 
 const MockInterview = () => {
   const [questions, setQuestions] = useState([]);
-  const [answers, setAnswers] = useState([]);
+  const [currentStep, setCurrentStep] = useState(0); // 0: Start, 1-4: Questions, 5: Result
+  const [answers, setAnswers] = useState({});
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    startInterview();
+    fetchQuestions();
   }, []);
 
-  const startInterview = async () => {
+  const fetchQuestions = async () => {
     try {
       const res = await api.get("/mock-interview/start");
       setQuestions(res.data.questions);
-
-      // initialize answers
-      setAnswers(
-        res.data.questions.map(q => ({
-          questionId: q._id,
-          category: q.category || "coding",
-          userAnswer: ""
-        }))
-      );
     } catch (err) {
-      console.error("Failed to fetch mock interview questions");
+      console.error("Failed to fetch questions", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (index, value) => {
-    const updated = [...answers];
-    updated[index].userAnswer = value;
-    setAnswers(updated);
+  const currentQuestion = questions[currentStep];
+
+  const handleAnswerChange = (val) => {
+    setAnswers({ ...answers, [currentQuestion.id]: val });
+  };
+
+  const handleNext = () => {
+    if (currentStep < questions.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      submitInterview();
+    }
   };
 
   const submitInterview = async () => {
     try {
       setSubmitting(true);
-      const res = await api.post("/mock-interview/submit", {
-        answers
-      });
+      // Format answers for API
+      const formattedAnswers = questions.map(q => ({
+        id: q.id,
+        category: q.category,
+        userAnswer: answers[q.id] || ""
+      }));
+
+      const res = await api.post("/mock-interview/submit", { answers: formattedAnswers });
       setResult(res.data.interview);
+      setCurrentStep(questions.length); // Transition to result state
     } catch (err) {
-      console.error("Failed to submit interview validation");
+      console.error("Submission failed", err);
     } finally {
       setSubmitting(false);
     }
@@ -60,123 +66,136 @@ const MockInterview = () => {
     return (
       <div className="interview-container">
         <Navbar />
-        <div className="interview-content">
-           <div className="interview-header">
-              <div className="skeleton" style={{ width: 80, height: 80, borderRadius: '50%', marginBottom: 24 }}></div>
-              <div className="skeleton" style={{ width: 400, height: 48, marginBottom: 16 }}></div>
-           </div>
-           {[1, 2, 3].map(i => (
-             <div key={i} className="skeleton" style={{ width: '100%', height: 250, borderRadius: 24, marginBottom: 32 }}></div>
-           ))}
+        <div className="interview-content" style={{ textAlign: "center", marginTop: "100px" }}>
+          <div className="interviewer-avatar">🤖</div>
+          <h2>Preparing your customized interview...</h2>
         </div>
       </div>
     );
   }
 
-  // --- RESULTS VIEW ---
+  if (questions.length === 0 && !result) {
+    return (
+      <div className="interview-container">
+        <Navbar />
+        <div className="interview-content" style={{ textAlign: "center", marginTop: "100px" }}>
+          <div className="interviewer-avatar">⚠️</div>
+          <h2>No questions found.</h2>
+          <p>Please try again later or contact support.</p>
+          <button className="btn-nav btn-primary" onClick={() => navigate("/home")} style={{ margin: "20px auto" }}>
+            Return Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // --- RESULT VIEW ---
   if (result) {
     return (
       <div className="interview-container">
         <Navbar />
         <div className="interview-content">
-          <div className="results-card">
+          <div className="results-container">
+            <h2 style={{ textAlign: "center", marginBottom: "40px", fontSize: "32px" }}>Interview Performance Report</h2>
             
-            <h2 className="interview-title" style={{ textAlign: "center", marginBottom: 40 }}>
-              Interview Results
-            </h2>
-
-            <div className="score-circle">
-              <span className="score-num">{result.totalScore}</span>
-              <span className="score-label">Total Score</span>
-            </div>
-
-            <div className="feedback-section">
-              <div className="feedback-box box-success">
-                <h4>✅ Key Strengths</h4>
-                {result.strengths.length > 0 ? (
-                  <ul className="feedback-list">
-                    {result.strengths.map((s, i) => (
-                      <li key={i}>{s}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p style={{ color: "var(--text-muted)", fontSize: 14 }}>No clear strengths identified in this session.</p>
-                )}
+            <div className="dashboard-grid">
+              <div className="score-panel">
+                <div className="radial-meter" style={{ "--score": result.totalScore }}>
+                  <div className="score-display">
+                    <span className="score-number">{result.totalScore}</span>
+                    <span className="score-percent">READINESS %</span>
+                  </div>
+                </div>
+                <p style={{ color: "#94a3b8", marginTop: "20px" }}>Overall Match to Industry Standards</p>
               </div>
 
-              <div className="feedback-box box-warning">
-                <h4>⚠️ Areas for Improvement</h4>
-                {result.weaknesses.length > 0 ? (
-                  <ul className="feedback-list">
-                    {result.weaknesses.map((w, i) => (
-                      <li key={i}>{w}</li>
-                    ))}
+              <div className="analysis-panel">
+                <div className="insight-card strength">
+                  <h4>✅ Key Strengths</h4>
+                  <ul className="insight-list">
+                    {result.strengths.length > 0 ? result.strengths.map((s, i) => (
+                      <li key={i}>{s.charAt(0).toUpperCase() + s.slice(1)} Knowledge</li>
+                    )) : <li>Keep practicing to build your core strengths!</li>}
                   </ul>
-                ) : (
-                  <p style={{ color: "var(--text-muted)", fontSize: 14 }}>Excellent! No major weaknesses identified.</p>
-                )}
+                </div>
+
+                <div className="insight-card weakness">
+                  <h4>⚠️ Critical Improvements</h4>
+                  <ul className="insight-list">
+                    {result.weaknesses.length > 0 ? result.weaknesses.map((w, i) => (
+                      <li key={i}>Focus on diving deeper into {w} concepts</li>
+                    )) : <li>Fantastic! You have a solid grasp across categories.</li>}
+                  </ul>
+                </div>
+
+                <button className="btn-nav btn-primary" onClick={() => navigate("/home")} style={{ marginTop: "20px" }}>
+                  Finish and Save Progress →
+                </button>
               </div>
             </div>
-
-            <div style={{ textAlign: "center", marginTop: 48 }}>
-               <button className="btn-submit" onClick={() => navigate("/home")}>
-                 Return to Dashboard
-               </button>
-            </div>
-
           </div>
         </div>
       </div>
     );
   }
 
-  // --- INTERVIEW VIEW ---
+  // --- INTERVIEW FLOW ---
   return (
     <div className="interview-container">
       <Navbar />
-      
       <div className="interview-content">
-        <div className="interview-header">
-          <div className="interview-icon">🎤</div>
-          <h2 className="interview-title">Mock Interview Session</h2>
-          <p className="interview-desc">
-            Answer the following questions to the best of your ability. The system will evaluate your responses for technical accuracy and communication.
-          </p>
+        
+        <div className="interviewer-box">
+          <div className="interviewer-avatar">👨‍💼</div>
+          <div className="interviewer-status">Interview in Progress</div>
         </div>
 
-        {questions.length === 0 ? (
-          <div className="empty-state">
-             <p>No interview questions available right now.</p>
+        <div className="chat-window">
+          {/* Interviewer Bubble */}
+          <div className="bubble bubble-bot">
+             <div style={{ fontSize: "12px", color: "#6366f1", marginBottom: "8px", fontWeight: "bold", textTransform: "uppercase" }}>
+               {currentQuestion.category} Question
+             </div>
+             {currentQuestion.title}
+             <div className="tip-box">
+               <span>💡 Tip:</span> {currentQuestion.tips}
+             </div>
           </div>
-        ) : (
-          <>
-            {questions.map((q, index) => (
-              <div key={index} className="question-card">
-                <div className="q-header">
-                  <div className="q-number">{index + 1}</div>
-                  <h4 className="q-title">{q.title}</h4>
-                </div>
 
-                <textarea
-                  className="answer-input"
-                  placeholder="Type your comprehensive answer here..."
-                  value={answers[index]?.userAnswer}
-                  onChange={e => handleChange(index, e.target.value)}
-                />
-              </div>
-            ))}
+          {/* User Bubble (Input) */}
+          <div className="bubble bubble-user">
+             <textarea
+               className="answer-textarea"
+               placeholder="Write your answer here... (be detailed for better analysis)"
+               value={answers[currentQuestion.id] || ""}
+               onChange={(e) => handleAnswerChange(e.target.value)}
+               autoFocus
+             />
+          </div>
+        </div>
 
-            <div className="submit-block">
-              <button 
-                className="btn-submit" 
-                onClick={submitInterview}
-                disabled={submitting}
-              >
-                {submitting ? "Analyzing Responses..." : "Submit Interview"} <span>→</span>
-              </button>
-            </div>
-          </>
-        )}
+        <div className="nav-bar">
+          <div className="progress-text">
+            Step {currentStep + 1} of {questions.length}
+          </div>
+          
+          <div style={{ display: "flex", gap: "16px" }}>
+             {currentStep > 0 && (
+               <button className="btn-nav" onClick={() => setCurrentStep(currentStep - 1)}>
+                 Back
+               </button>
+             )}
+             
+             <button 
+               className="btn-nav btn-primary" 
+               onClick={handleNext}
+               disabled={submitting || !(answers[currentQuestion.id]?.trim()?.length > 5)}
+             >
+               {submitting ? "Processing..." : (currentStep === questions.length - 1 ? "Finish Interview" : "Next Question →")}
+             </button>
+          </div>
+        </div>
 
       </div>
     </div>
@@ -184,3 +203,4 @@ const MockInterview = () => {
 };
 
 export default MockInterview;
+
