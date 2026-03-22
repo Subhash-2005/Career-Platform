@@ -104,7 +104,11 @@ const Login = () => {
           </button>
           
         </form>
-
+        <div style={{ textAlign: "right", marginTop: "8px" }}>
+  <Link to="/forgot-password" className="auth-link">
+    Forgot Password?
+  </Link>
+</div>
         <div className="auth-footer">
           Don’t have an account? <Link to="/register" className="auth-link">Sign up for free</Link>
         </div>
