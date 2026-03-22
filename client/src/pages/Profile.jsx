@@ -8,7 +8,6 @@ const Profile = () => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    age: "",
     educationLevel: "",
     schoolClass: "",
     targetRole: "",
@@ -29,7 +28,6 @@ const Profile = () => {
       const res = await api.get("/user/profile");
 
       setForm({
-        age: res.data.age || "",
         educationLevel: res.data.educationLevel || "",
         schoolClass: res.data.schoolClass || "",
         targetRole: res.data.targetRole || "",
@@ -129,19 +127,6 @@ const Profile = () => {
             />
           </div>
 
-          <div className="form-group">
-            <label>Age</label>
-            <input
-              className="form-control"
-              type="number"
-              min="1"
-              name="age"
-              placeholder="Your age"
-              value={form.age}
-              onChange={handleChange}
-              required
-            />
-          </div>
 
           <div className="form-group">
             <label>Education Level</label>

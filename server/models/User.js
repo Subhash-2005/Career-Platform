@@ -16,7 +16,6 @@ const UserSchema = new mongoose.Schema({
   },
 
   // Profile info (filled after signup)
-  age: Number,
   educationLevel: {
   type: String,
   enum: ["school", "college", "professional"]

@@ -3,7 +3,6 @@ const User = require("../models/User");
 // Update / Create Profile
 exports.updateProfile = async (req, res) => {
   const {
-    age,
     educationLevel,
     schoolClass,
     targetRole,
@@ -17,7 +16,6 @@ exports.updateProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.age = age;
     user.educationLevel = educationLevel;
     user.schoolClass = schoolClass;
     user.targetRole = targetRole;

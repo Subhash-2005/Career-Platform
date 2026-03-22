@@ -11,7 +11,6 @@ const ProfileSetup = () => {
   const [saving, setSaving] = useState(false);
   
   const [form, setForm] = useState({
-    age: "",
     educationLevel: "",
     targetRole: "",
     hoursPerDay: "",
@@ -85,19 +84,6 @@ const ProfileSetup = () => {
             />
           </div>
 
-          <div className="form-group">
-            <label>Age</label>
-            <input
-              className="form-control"
-              type="number"
-              min="1"
-              name="age"
-              placeholder="Your age"
-              value={form.age}
-              onChange={handleChange}
-              required
-            />
-          </div>
 
           <div className="form-group">
             <label>Education Level</label>
