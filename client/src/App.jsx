@@ -17,7 +17,8 @@ import Profile from "./pages/Profile";
 import CareerGuidance from "./pages/CareerGuidance";
 import AdminDashboard from "./pages/AdminDashboard";
 import LearnTopic from "./pages/LearnTopic";
-
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 function App() {
   return (
     <AuthProvider>
@@ -28,6 +29,8 @@ function App() {
           <Route path="/" element={<Welcome />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           {/* <Route path="/contact" element={<Contact />} /> */}
 
           {/* 🔐 PROTECTED ROUTES */}
