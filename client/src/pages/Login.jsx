@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 import "./Login.css";
+import { GoogleLogin } from "@react-oauth/google";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,7 +16,20 @@ const Login = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const handleGoogleLogin = async (token) => {
+    try {
+      const res = await api.post("/auth/google", { token });
 
+      const user = res.data.user;
+      const jwtToken = res.data.token;
+
+      login(user, jwtToken); // use your context
+
+      navigate("/home"); // same as normal login
+    } catch (err) {
+      console.error(err);
+    }
+  };
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -102,7 +116,17 @@ const Login = () => {
           <button className="btn-primary" type="submit" disabled={loading}>
             {loading ? "Authenticating... ⏳" : "Log In"}
           </button>
-          
+          <div style={{ marginTop: "20px" }}>
+  <GoogleLogin
+    onSuccess={(credentialResponse) => {
+      console.log("Google Token:", credentialResponse.credential);
+      handleGoogleLogin(credentialResponse.credential);
+    }}
+    onError={() => {
+      console.log("Google Login Failed");
+    }}
+  />
+</div>
         </form>
         <div style={{ textAlign: "right", marginTop: "8px" }}>
   <Link to="/forgot-password" className="auth-link">
@@ -117,5 +141,6 @@ const Login = () => {
     </div>
   );
 };
+
 
 export default Login;
