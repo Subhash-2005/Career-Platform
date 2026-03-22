@@ -45,8 +45,10 @@ exports.generateRoadmap = async (req, res) => {
 
 
 const classLevel = user.schoolClass || 8;
+const isCivilService = rawRole.includes("ias") || rawRole.includes("ifs") || rawRole.includes("officer");
+const category = isCivilService ? "civil" : "tech";
 
-const topics = SCHOOL_FOUNDATION[classLevel] || SCHOOL_FOUNDATION[8];
+const topics = SCHOOL_FOUNDATION[category]?.[classLevel] || SCHOOL_FOUNDATION.tech[8];
 
 let roadmapDays = [];
 let day = 1;
