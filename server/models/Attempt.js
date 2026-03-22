@@ -24,7 +24,7 @@ const attemptSchema = new mongoose.Schema({
   },
   link: {                 // ← ADD THIS
     type: String,
-    required: true
+    required: false
   },
   timestamp: {
     type: Date,

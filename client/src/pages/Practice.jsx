@@ -8,8 +8,10 @@ const Practice = () => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState([]);
-  const [attemptedLinks, setAttemptedLinks] = useState([]);
+  const [attemptedKeys, setAttemptedKeys] = useState([]); // Use generic key (link or id)
   const [justAttempted, setJustAttempted] = useState(null);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [showFeedback, setShowFeedback] = useState({});
 
   useEffect(() => {
     loadPractice();
@@ -34,7 +36,9 @@ const Practice = () => {
       setStats(res.data);
 
       const attempts = await api.get("/attempt/all").catch(() => ({ data: [] }));
-      setAttemptedLinks(attempts.data.map((a) => a.link));
+      // Map both link and ID for tracking attempted status
+      const keys = attempts.data.map((a) => a.link || a.id); 
+      setAttemptedKeys(keys);
     } catch (err) {
       console.log("Failed to load stats");
     }
@@ -42,21 +46,19 @@ const Practice = () => {
 
   const handleAttempt = async (question, isCorrect, index) => {
     try {
-      const confidence = document.getElementById(`confidence-${index}`).value;
+      const confidence = document.getElementById(`confidence-${index}`)?.value || "medium";
+      const key = question.link || question.id;
 
       const res = await api.post("/attempt/submit", {
         topic: question.topic,
         difficulty: question.difficulty || "medium",
         correct: isCorrect,
         confidence,
-        link: question.link,
+        link: question.link || question.id, // Fallback to id if link missing
       });
 
       if (res.data.message === "Attempt recorded") {
-        setAttemptedLinks((prev) =>
-          prev.includes(question.link) ? prev : [...prev, question.link]
-        );
-        // Trigger a visual stamp animation
+        setAttemptedKeys((prev) => prev.includes(key) ? prev : [...prev, key]);
         setJustAttempted(index);
         setTimeout(() => setJustAttempted(null), 2000);
       }
@@ -64,11 +66,16 @@ const Practice = () => {
       loadStats();
     } catch (err) {
       console.error("Attempt error:", err.response?.data || err);
-      // Fallback UI update if API fails slightly during local testing but should succeed conceptually
-      setAttemptedLinks((prev) =>
-          prev.includes(question.link) ? prev : [...prev, question.link]
-      );
     }
+  };
+
+  const handleMcqSubmit = (question, index) => {
+    const selected = selectedAnswers[index];
+    if (!selected) return;
+
+    const isCorrect = selected === question.answer;
+    setShowFeedback(prev => ({ ...prev, [index]: true }));
+    handleAttempt(question, isCorrect, index);
   };
 
   if (loading) {
@@ -149,33 +156,70 @@ const Practice = () => {
 
       <div className="problem-grid">
         {questions.map((q, index) => {
-          const isAttempted = attemptedLinks.includes(q.link);
+          const key = q.link || q.id;
+          const isAttempted = attemptedKeys.includes(key);
           const showStamp = justAttempted === index;
-          
+          const isMcq = !!q.options;
+          const feedbackVisible = showFeedback[index] || isAttempted;
+          const isCorrect = isMcq ? (selectedAnswers[index] === q.answer || isAttempted) : true; // Simplified for UI
+
           return (
-            <div key={q.link} className={`problem-card ${isAttempted ? 'attempted' : ''}`}>
+            <div key={key} className={`problem-card ${isAttempted ? 'attempted' : ''} ${isMcq ? 'mcq-card' : ''}`}>
               
               {showStamp && <div className="attempted-stamp">SOLVED</div>}
               
               <div className="problem-header">
                 <h3 className="problem-title">
-                  {index + 1}. {q.question}
+                  {index + 1}. {isMcq ? q.question : q.title}
                 </h3>
                 <span className={`difficulty-badge difficulty-${(q.difficulty || "medium").toLowerCase()}`}>
                   {q.difficulty || "Medium"}
                 </span>
               </div>
 
-              <a
-                href={q.link}
-                target="_blank"
-                rel="noreferrer"
-                className="problem-link"
-              >
-                {getLinkLabel(q.link)}
-              </a>
+              {isMcq ? (
+                <div className="mcq-options">
+                  {q.options.map((opt, i) => {
+                    const isSelected = selectedAnswers[index] === opt;
+                    const isCorrectOpt = opt === q.answer;
+                    let optClass = "";
+                    if (feedbackVisible) {
+                      if (isCorrectOpt) optClass = "correct-opt";
+                      else if (isSelected) optClass = "wrong-opt";
+                    } else if (isSelected) {
+                      optClass = "selected-opt";
+                    }
 
-              <div className="form-group">
+                    return (
+                      <button
+                        key={i}
+                        className={`option-btn ${optClass}`}
+                        onClick={() => !feedbackVisible && setSelectedAnswers(prev => ({ ...prev, [index]: opt }))}
+                        disabled={feedbackVisible}
+                      >
+                        {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <a
+                  href={q.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="problem-link"
+                >
+                  {getLinkLabel(q.link)}
+                </a>
+              )}
+
+              {feedbackVisible && isMcq && (
+                <div className="explanation-box">
+                  <p><strong>Explanation:</strong> {q.explanation}</p>
+                </div>
+              )}
+
+              <div className="form-group" style={{ marginTop: isMcq ? "16px" : "auto" }}>
                 <label htmlFor={`confidence-${index}`} className="form-label">How confident were you?</label>
                 <select id={`confidence-${index}`} className="confidence-select" disabled={isAttempted}>
                   <option value="high">High Confidence (Solved easily)</option>
@@ -185,21 +229,34 @@ const Practice = () => {
               </div>
 
               <div className="card-actions">
-                <button
-                  className="btn-success btn-icon"
-                  disabled={isAttempted}
-                  onClick={() => handleAttempt(q, true, index)}
-                >
-                  <span>✅</span> I Solved It
-                </button>
+                {isMcq ? (
+                  <button
+                    className="btn-primary"
+                    style={{ width: "100%" }}
+                    disabled={feedbackVisible || !selectedAnswers[index]}
+                    onClick={() => handleMcqSubmit(q, index)}
+                  >
+                    Check Answer
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="btn-success btn-icon"
+                      disabled={isAttempted}
+                      onClick={() => handleAttempt(q, true, index)}
+                    >
+                      <span>✅</span> I Solved It
+                    </button>
 
-                <button
-                  className="btn-danger btn-icon"
-                  disabled={isAttempted}
-                  onClick={() => handleAttempt(q, false, index)}
-                >
-                  <span>❌</span> Need Review
-                </button>
+                    <button
+                      className="btn-danger btn-icon"
+                      disabled={isAttempted}
+                      onClick={() => handleAttempt(q, false, index)}
+                    >
+                      <span>❌</span> Need Review
+                    </button>
+                  </>
+                )}
               </div>
               
             </div>

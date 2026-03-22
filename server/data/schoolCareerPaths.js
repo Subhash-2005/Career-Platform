@@ -272,7 +272,59 @@ const SCHOOL_CAREER_PATHS = {
         ]
       }
     ]
+  },
+  
+  "ias officer": {
+    goal: "IAS Officer (Civil Services)",
+    description: "Serves the nation through administration and policy implementation.",
+    paths: [
+      {
+        title: "Any Stream → Graduation → UPSC",
+        steps: [
+          "Focus on NCERTs (History, Polity, Geography) from Class 6-12",
+          "Choose any stream (Arts/Science/Commerce) after 10th",
+          "Complete any Graduation degree",
+          "Prepare for UPSC Civil Services Examination"
+        ]
+      },
+      {
+        title: "Arts Stream → Specialized Graduation → IAS",
+        steps: [
+          "Choose Humanities/Arts in Class 11-12",
+          "Focus on History, Political Science, and Economics",
+          "Bachelor's in Humanities (Political Science / History)",
+          "Intensive UPSC Prelims and Mains preparation"
+        ]
+      }
+    ]
+  },
+
+  "ifs officer": {
+    goal: "IFS Officer (International Relations)",
+    description: "Represents India's interests globally and manages diplomatic relations.",
+    paths: [
+      {
+        title: "Humanities / Arts Route → Diplomat",
+        steps: [
+          "Focus on World History and Political Science in Class 11-12",
+          "Bachelor's in International Relations / Political Science",
+          "Develop strong command over English and a Foreign Language",
+          "Clear UPSC Civil Services Exam with high rank for IFS"
+        ]
+      },
+      {
+        title: "English / Literature Route → IFS",
+        steps: [
+          "Focus on English Literature and Communication after 10th",
+          "Bachelor's in English Honours / History",
+          "Read extensively on Geopolitics and International Trade",
+          "Take elective courses in Diplomacy and Public Policy"
+        ]
+      }
+    ]
   }
 };
+
+
 
 module.exports = SCHOOL_CAREER_PATHS;

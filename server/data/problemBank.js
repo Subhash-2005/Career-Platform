@@ -1094,6 +1094,388 @@ difficulty: "medium",
 company: ["Meta"],
 link: "https://react.dev/reference/react"
 }
-]
+],
 
+  // ====================== IAS (UPSC) ======================
+  "Indian Polity": [
+    {
+      id: "ias_polity_1",
+      topic: "Indian Polity",
+      subTopic: "Constitutional Framework",
+      question: "Which article of the Indian Constitution provides for the 'Right to Constitutional Remedies'?",
+      options: ["Article 14", "Article 21", "Article 32", "Article 44"],
+      answer: "Article 32",
+      explanation: "Article 32 is described by Dr. B.R. Ambedkar as the 'heart and soul' of the Constitution.",
+      difficulty: "easy"
+    },
+    {
+      id: "ias_polity_2",
+      topic: "Indian Polity",
+      subTopic: "Executive",
+      question: "The 'Pardon Power' of the President of India is mentioned under which article?",
+      options: ["Article 61", "Article 72", "Article 123", "Article 143"],
+      answer: "Article 72",
+      explanation: "Article 72 empowers the President to grant pardons and to suspend, remit or commute sentences.",
+      difficulty: "medium"
+    },
+    {
+      id: "ias_polity_3",
+      topic: "Indian Polity",
+      subTopic: "Judiciary",
+      question: "The power of 'Judicial Review' in India is based on:",
+      options: ["Rule of Law", "Due process of law", "Procedure established by law", "Precedents and conventions"],
+      answer: "Procedure established by law",
+      explanation: "The Indian Constitution adopts 'procedure established by law' (Art 21) though the SC uses it for judicial review.",
+      difficulty: "hard"
+    },
+    {
+      id: "ias_polity_4",
+      topic: "Indian Polity",
+      subTopic: "Panchayati Raj",
+      question: "The 73rd Constitutional Amendment Act, 1992 added which part to the Constitution?",
+      options: ["Part IX", "Part IX-A", "Part X", "Part XI"],
+      answer: "Part IX",
+      explanation: "Part IX relates to Panchayats, while Part IX-A relates to Municipalities.",
+      difficulty: "medium"
+    },
+    {
+      id: "ias_polity_5",
+      topic: "Indian Polity",
+      subTopic: "Parliament",
+      question: "Who is the ex-officio Chairman of Rajya Sabha?",
+      options: ["The President", "The Vice-President", "The Prime Minister", "The Speaker of Lok Sabha"],
+      answer: "The Vice-President",
+      explanation: "Article 64 of the Indian Constitution states that the Vice-President shall be the ex-officio Chairman of Rajya Sabha.",
+      difficulty: "easy"
+    }
+  ],
+
+  "Indian History": [
+    {
+      id: "ias_history_1",
+      topic: "Indian History",
+      subTopic: "Modern History",
+      question: "Who was the first Governor-General of Bengal?",
+      options: ["Warren Hastings", "Lord Cornwallis", "Lord William Bentinck", "Robert Clive"],
+      answer: "Warren Hastings",
+      explanation: "The Regulating Act of 1773 designated the Governor of Bengal as the Governor-General of Bengal.",
+      difficulty: "easy"
+    },
+    {
+      id: "ias_history_2",
+      topic: "Indian History",
+      subTopic: "Medieval History",
+      question: "Who among the following Sultan established 'Diwan-i-Amir-Kohi' (department of agriculture)?",
+      options: ["Alauddin Khalji", "Iltutmish", "Muhammad bin Tughlaq", "Firoz Shah Tughlaq"],
+      answer: "Muhammad bin Tughlaq",
+      explanation: "Muhammad bin Tughlaq established a separate department for the promotion of agriculture.",
+      difficulty: "hard"
+    },
+    {
+      id: "ias_history_3",
+      topic: "Indian History",
+      subTopic: "Ancient History",
+      question: "The 'Saptang Theory' of State was given by:",
+      options: ["Manu", "Chanakya (Kautilya)", "Megasthenes", "Ashoka"],
+      answer: "Chanakya (Kautilya)",
+      explanation: "Kautilya’s Arthashastra defines the seven elements (Saptang) of a sovereign state.",
+      difficulty: "medium"
+    },
+    {
+      id: "ias_history_4",
+      topic: "Indian History",
+      subTopic: "Modern History",
+      question: "Which act is also known as the 'Morley-Minto Reforms'?",
+      options: [
+        "Indian Councils Act 1892",
+        "Indian Councils Act 1909",
+        "Government of India Act 1919",
+        "Government of India Act 1935"
+      ],
+      answer: "Indian Councils Act 1909",
+      explanation: "The Indian Councils Act 1909 is called Morley-Minto reforms after the Secretary of State and the Viceroy.",
+      difficulty: "medium"
+    }
+  ],
+
+  "Geography": [
+    {
+      id: "ias_geo_1",
+      topic: "Geography",
+      subTopic: "Indian Geography",
+      question: "Which of the following passes connects Srinagar to Leh?",
+      options: ["Zoji La Pass", "Bara-lacha La Pass", "Rohtang Pass", "Nathu La Pass"],
+      answer: "Zoji La Pass",
+      explanation: "Zoji La is a high mountain pass in the Himalayas at an altitude of 11,575 ft above sea level.",
+      difficulty: "medium"
+    },
+    {
+      id: "ias_geo_2",
+      topic: "Geography",
+      subTopic: "Environment",
+      question: "Which of the following is the first National Park of India?",
+      options: ["Jim Corbett", "Bandipur", "Kaziranga", "Kanha"],
+      answer: "Jim Corbett",
+      explanation: "Jim Corbett National Park in Uttarakhand was established in 1936.",
+      difficulty: "easy"
+    },
+    {
+      id: "ias_geo_3",
+      topic: "Geography",
+      subTopic: "Ecology",
+      question: "What is 'Biological Oxygen Demand' (BOD) a measure of?",
+      options: [
+        "Oxygen levels in forests",
+        "Industrial oxygen requirement",
+        "Amount of organic pollution in water",
+        "Atmospheric oxygen saturation"
+      ],
+      answer: "Amount of organic pollution in water",
+      explanation: "High BOD indicates high levels of organic matter and low water quality.",
+      difficulty: "medium"
+    }
+  ],
+
+  "Indian Economy": [
+    {
+      id: "ias_eco_1",
+      topic: "Indian Economy",
+      subTopic: "Banking & Finance",
+      question: "What is 'Repo Rate' in the context of Indian economy?",
+      options: [
+        "Rate at which banks lend to RBI",
+        "Rate at which RBI lends to commercial banks for short term",
+        "Rate at which banks lend to each other",
+        "Inflation adjusted interest rate"
+      ],
+      answer: "Rate at which RBI lends to commercial banks for short term",
+      explanation: "Repo rate is a key policy rate used by RBI to control inflation and liquidity.",
+      difficulty: "medium"
+    },
+    {
+      id: "ias_eco_2",
+      topic: "Indian Economy",
+      subTopic: "Fiscal Policy",
+      question: "What is 'Fiscal Deficit'?",
+      options: [
+        "Total expenditure minus revenue receipts",
+        "Total expenditure minus total receipts excluding borrowings",
+        "Difference between exports and imports",
+        "Deficit in currency circulation"
+      ],
+      answer: "Total expenditure minus total receipts excluding borrowings",
+      explanation: "Fiscal deficit is the excess of total disbursements over total receipts excluding borrowings.",
+      difficulty: "medium"
+    },
+    {
+      id: "ias_eco_3",
+      topic: "Indian Economy",
+      subTopic: "Agriculture",
+      question: "What is the primary objective of the PM-KUSUM scheme?",
+      options: [
+        "Free fertilizers to small farmers",
+        "Solarization of agriculture pumps",
+        "Direct income support",
+        "Crop insurance"
+      ],
+      answer: "Solarization of agriculture pumps",
+      explanation: "PM-KUSUM aims to provide energy security to farmers and increase the share of non-fossil fuel capacity.",
+      difficulty: "medium"
+    },
+    {
+      id: "ias_eco_4",
+      topic: "Indian Economy",
+      subTopic: "Infrastructure",
+      question: "The 'Bharatmala Pariyojana' is primarily focused on:",
+      options: ["Inland Waterways", "Road & Highways", "Aviation", "Ports Development"],
+      answer: "Road & Highways",
+      explanation: "Bharatmala is an umbrella program for the highways sector that focuses on optimizing efficiency of freight and passenger movement.",
+      difficulty: "easy"
+    },
+    {
+      id: "ias_eco_5",
+      topic: "Indian Economy",
+      subTopic: "External Sector",
+      question: "What is 'Balance of Payments'?",
+      options: [
+        "Difference between exports and imports only",
+        "Total record of economic transactions of a country with the rest of the world",
+        "Total foreign exchange reserves",
+        "Budget deficit minus borrowings"
+      ],
+      answer: "Total record of economic transactions of a country with the rest of the world",
+      explanation: "BoP tracks all monetary transactions between a country and the rest of the world.",
+      difficulty: "medium"
+    }
+  ],
+
+  "Ethics": [
+    {
+      id: "ias_ethics_1",
+      topic: "Ethics",
+      subTopic: "Aptitude & Integrity",
+      question: "An ethical dilemma for a civil servant 'Conflict of Interest' most accurately refers to:",
+      options: [
+        "Difference in opinion with a senior officer",
+        "Personal interests conflicting with professional duties",
+        "Lack of resources to implement a policy",
+        "Political pressure on a neutral bureaucrat"
+      ],
+      answer: "Personal interests conflicting with professional duties",
+      explanation: "Conflict of interest occurs when a public official's private interests might improperly influence their performance.",
+      difficulty: "easy"
+    },
+    {
+      id: "ias_ethics_2",
+      topic: "Ethics",
+      subTopic: "Values",
+      question: "Which of the following is NOT one of the 'Nolan Principles' of Public Life?",
+      options: ["Selflessness", "Objectivity", "Profitability", "Accountability"],
+      answer: "Profitability",
+      explanation: "The Nolan principles are Selflessness, Integrity, Objectivity, Accountability, Openness, Honesty, and Leadership.",
+      difficulty: "easy"
+    }
+  ],
+
+  "CSAT": [
+    {
+      id: "ias_aptitude_1",
+      topic: "CSAT",
+      subTopic: "Decision Making",
+      question: "While managing a flood relief camp, you find that food supplies are insufficient for the next two days. What is your most ethical course of action?",
+      options: [
+        "Hide the shortage to prevent panic",
+        "Prioritize supplies for active workers only",
+        "Ration existing supplies equally and request immediate emergency air-drop",
+        "Tell the people to find their own food till supplies arrive"
+      ],
+      answer: "Ration existing supplies equally and request immediate emergency air-drop",
+      explanation: "Transparency, equality, and proactive crisis management are core administrative ethics.",
+      difficulty: "medium"
+    },
+    {
+      id: "ias_aptitude_2",
+      topic: "CSAT",
+      subTopic: "Logical Reasoning",
+      question: "If 'COUNTRY' is coded as 'EMWPVTA', how is 'POLICE' coded in that language?",
+      options: ["RQNKEG", "RQNKGE", "SQNLHF", "RPNKEG"],
+      answer: "RQNKGE",
+      explanation: "Each letter is shifted by +2 in the alphabet (C+2=E, O+2=Q, ... P+2=R, O+2=Q, L+2=N, I+2=K, C+2=E, E+2=G).",
+      difficulty: "medium"
+    }
+  ],
+
+  "International Relations": [
+    {
+      id: "ias_ir_1",
+      topic: "International Relations",
+      subTopic: "India-Neighborhood",
+      question: "Which Indian state shares the longest border with Bangladesh?",
+      options: ["West Bengal", "Assam", "Meghalaya", "Tripura"],
+      answer: "West Bengal",
+      explanation: "West Bengal shares a 2217 km long border with Bangladesh.",
+      difficulty: "easy"
+    },
+    {
+      id: "ias_ir_2",
+      topic: "International Relations",
+      subTopic: "Forums",
+      question: "Where is the headquarters of the 'New Development Bank' (BRICS Bank) located?",
+      options: ["New Delhi", "Beijing", "Shanghai", "Moscow"],
+      answer: "Shanghai",
+      explanation: "The New Development Bank is headquartered in Shanghai, China.",
+      difficulty: "medium"
+    }
+  ],
+
+  "Environment": [
+    {
+      id: "ias_env_1",
+      topic: "Environment",
+      subTopic: "Pollution",
+      question: "The 'Montreal Protocol' is related to:",
+      options: [
+        "Global Warming",
+        "Ozone Layer Depletion",
+        "Biodiversity Conservation",
+        "Hazardous Waste"
+      ],
+      answer: "Ozone Layer Depletion",
+      explanation: "The Montreal Protocol is an international treaty designed to protect the ozone layer by phasing out ODS.",
+      difficulty: "easy"
+    },
+    {
+      id: "ias_env_2",
+      topic: "Environment",
+      subTopic: "Ecology",
+      question: "Which of the following is an 'In-situ' method of biodiversity conservation?",
+      options: ["Botanical Gardens", "Zoological Parks", "National Parks", "Seed Banks"],
+      answer: "National Parks",
+      explanation: "In-situ conservation is the conservation of species in their natural habitats. National Parks and Wildlife Sanctuaries are examples.",
+      difficulty: "medium"
+    },
+    {
+      id: "ifs_ir_1",
+      topic: "International Relations",
+      subTopic: "Diplomacy",
+      question: "The 'Vienna Convention on Diplomatic Relations' was adopted in which year?",
+      options: ["1945", "1961", "1972", "1991"],
+      answer: "1961",
+      explanation: "The Vienna Convention on Diplomatic Relations of 1961 is an international treaty that defines a framework for diplomatic relations between independent countries.",
+      difficulty: "medium"
+    },
+    {
+      id: "ifs_hist_1",
+      topic: "Indian History",
+      subTopic: "World History",
+      question: "The 'Treaty of Versailles' was signed after which major war?",
+      options: ["The Napoleonic Wars", "World War I", "World War II", "The Cold War"],
+      answer: "World War I",
+      explanation: "The Treaty of Versailles (1919) was the most important of the peace treaties that brought World War I to an end.",
+      difficulty: "easy"
+    },
+    {
+      id: "ifs_ir_2",
+      topic: "International Relations",
+      subTopic: "Global Bodies",
+      question: "Which country is NOT a member of the QUAD (Quadrilateral Security Dialogue)?",
+      options: ["USA", "India", "Australia", "South Korea"],
+      answer: "South Korea",
+      explanation: "The QUAD consists of the USA, India, Australia, and Japan.",
+      difficulty: "easy"
+    },
+    {
+      id: "ifs_eco_1",
+      topic: "Indian Economy",
+      subTopic: "Global Trade",
+      question: "What does the 'Most Favoured Nation' (MFN) clause in WTO imply?",
+      options: [
+        "Special preference to neighboring countries",
+        "Non-discrimination between trading partners",
+        "Higher tariffs on developed nations",
+        "Exemption from all import duties"
+      ],
+      answer: "Non-discrimination between trading partners",
+      explanation: "Under WTO agreements, countries cannot normally discriminate between their trading partners.",
+      difficulty: "hard"
+    },
+    {
+      id: "ifs_geo_1",
+      topic: "Geography",
+      subTopic: "Strategic Geography",
+      question: "The 'Strait of Malacca' connects which two bodies of water?",
+      options: [
+        "Red Sea and Gulf of Aden",
+        "Andaman Sea and South China Sea",
+        "Persian Gulf and Gulf of Oman",
+        "Mediterranean Sea and Black Sea"
+      ],
+      answer: "Andaman Sea and South China Sea",
+      explanation: "The Strait of Malacca is a narrow stretch of water between the Malay Peninsula and the Indonesian island of Sumatra.",
+      difficulty: "medium"
+    }
+  ]
 };
+
+
+

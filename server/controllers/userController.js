@@ -27,7 +27,6 @@ exports.updateProfile = async (req, res) => {
     res.json({
       message: "Profile updated successfully",
       profile: {
-        age,
         educationLevel,
         targetRole,
         hoursPerDay,
