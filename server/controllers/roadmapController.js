@@ -128,12 +128,6 @@ topics.forEach(topic => {
     }
     });
 
-// ====================== GENERATE ROADMAP FROM SKILL TREE ======================
-
-// ====================== SMART ROADMAP GENERATOR ======================
-
-// ====================== ADAPTIVE ROADMAP GENERATOR ======================
-// ====================== ADAPTIVE ROADMAP GENERATOR ======================
 
 let roadmapDays = [];
 let counter = 1;
@@ -175,8 +169,6 @@ const totalTopics = topics.length;
 const maxTopicsPossible = user.daysToCrack * Math.max(1, user.hoursPerDay);
 
 topicsToUse = topics.slice(0, Math.min(totalTopics, maxTopicsPossible));
-
-// ================= DAILY ROADMAP =================
 
 if (user.daysToCrack <= 120) {
 
