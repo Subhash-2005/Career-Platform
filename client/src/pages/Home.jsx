@@ -112,6 +112,8 @@ const Home = () => {
     );
   }
 
+  // --- RE-SYNCHRONIZED LOGIC START ---
+  // Determine if we are tracking weeks, months, or days based on the current roadmap data
   const unitType =
     roadmapDays?.[0]?.label?.includes("Week")
       ? "weeks"
@@ -119,29 +121,26 @@ const Home = () => {
       ? "months"
       : "days";
 
-  const days = profile?.daysToCrack || 0;
-  const totalUnits =
-    unitType === "months"
-      ? Math.ceil(days / 30)
-      : unitType === "weeks"
-      ? Math.ceil(days / 7)
-      : days;
-
-  const completedUnits = roadmapProgress?.completedDays || 0;
+  // Use values from roadmapProgress (Source of Truth for the current plan)
+  const totalUnits = roadmapProgress?.totalDays || 0;
+  const completedUnits = roadmapProgress?.completedUnits || 0;
   const remainingUnits = Math.max(totalUnits - completedUnits, 0);
+  // --- RE-SYNCHRONIZED LOGIC END ---
 
   return (
     <div className="home-container">
       <Navbar />
 
-      {/* Greeting Header */}
+      {/* Greeting Header - Now perfectly synced with followed roadmaps */}
       <header className="home-header">
         <h1 className="welcome-title">Welcome, {profile?.name} 👋</h1>
         <div className="welcome-subtitle">
           <span>Targeting</span>
           <span className="role-badge">{profile?.targetRole}</span>
           <span>•</span>
-          <span><b>{remainingUnits} {unitType}</b> remaining to achieve your goal</span>
+          <span>
+            <b>{remainingUnits} {unitType}</b> remaining to achieve your goal
+          </span>
         </div>
       </header>
 

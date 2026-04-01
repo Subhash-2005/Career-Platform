@@ -13,8 +13,8 @@ const Navbar = () => {
     <nav className="nav-container">
       
       <Link to={user ? "/home" : "/"} className="nav-brand">
-        <div className="nav-logo-cube">C</div>
-        Career Planner
+        <div className="nav-logo-cube">S</div>
+        Skill Path
       </Link>
 
       {user ? (

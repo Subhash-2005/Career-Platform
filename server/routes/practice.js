@@ -1,9 +1,9 @@
 const express = require("express");
-const authMiddleware = require("../middleware/authMiddleware");
-const { getPracticeForToday } = require("../controllers/roadmapController");
-
 const router = express.Router();
+const { generateDailyPractice } = require("../controllers/practiceController");
+const authMiddleware = require("../middleware/authMiddleware");
 
-router.get("/today", authMiddleware, getPracticeForToday);
+// Ensure this line exists!
+router.get("/generate", authMiddleware, generateDailyPractice);
 
 module.exports = router;

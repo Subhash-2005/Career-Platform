@@ -1,15 +1,16 @@
 const Roadmap = require("../models/Roadmap");
 const User = require("../models/User");
-const Question = require("../models/Question");
-const SCHOOL_CAREER_PATHS = require("../data/schoolCareerPaths");
-const SCHOOL_FOUNDATION = require("../data/schoolFoundation");
-const SKILL_TREES = require("../data/skillTrees");
-const getWeakTopics = require("../utils/weakTopicAnalyzer");
-const PROBLEM_BANK = require("../data/problemBank");
 const Attempt = require("../models/Attempt");
 const MockInterview = require("../models/MockInterview");
+const getWeakTopics = require("../utils/weakTopicAnalyzer");
+const PROBLEM_BANK = require("../data/problemBank");
 const getAdaptivePractice = require("../utils/adaptivePracticeSelector");
-// ====================== GENERATE ROADMAP ======================
+const Groq = require("groq-sdk");
+
+// Initialize Groq
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+// ====================== GENERATE ROADMAP (AI POWERED) ======================
 exports.generateRoadmap = async (req, res) => {
   try {
     const user = await User.findById(req.user);
@@ -18,303 +19,113 @@ exports.generateRoadmap = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Clear old data to start fresh for the new role
+    // Clear old data to start fresh for the new AI roadmap
     await Attempt.deleteMany({ userId: req.user });
     await MockInterview.deleteMany({ userId: req.user });
     await Roadmap.deleteMany({ userId: req.user });
 
-    // ====================== SCHOOL USER ======================
-    if (user.educationLevel === "school") {
-      const rawRole = (user.targetRole || "").toLowerCase().trim();
-      const engineerVariant = rawRole.replace("developer", "engineer");
-      const developerVariant = rawRole.replace("engineer", "developer");
+    // 1. Determine the structure based on duration
+    const isLongTerm = user.daysToCrack >= 30;
+    const timeLabel = isLongTerm ? "WEEKLY PHASES" : "DAILY STEPS";
 
-      const guidance =
-        SCHOOL_CAREER_PATHS[rawRole] ||
-        SCHOOL_CAREER_PATHS[engineerVariant] ||
-        SCHOOL_CAREER_PATHS[developerVariant] ||
-        {
-          goal: user.targetRole,
-          description: "Career guidance will be added soon.",
-          paths: []
-        };
-
-      if (!user.schoolPath) {
-        return res.json({ mode: "school", guidance });
-      }
-
-
-const classLevel = user.schoolClass || 8;
-
-const topics = SCHOOL_FOUNDATION[classLevel] || SCHOOL_FOUNDATION[8];
-
-let roadmapDays = [];
-let day = 1;
-
-// If a path is selected, add short path milestone tasks at the start.
-const selectedPath = guidance.paths?.find(p => 
-  p.title.toLowerCase().trim() === (user.schoolPath || "").toLowerCase().trim()
-);
-if (selectedPath) {
-  selectedPath.steps.forEach((step, index) => {
-    roadmapDays.push({
-      day: day++,
-      tasks: [
-        {
-          topic: step,
-          type: "career-path",
-          completed: false,
-          note: `Path milestone ${index + 1} of ${selectedPath.steps.length}`
-        }
-      ],
-      status: "pending"
-    });
-  });
-}
-
-topics.forEach(topic => {
-  for (let i = 0; i < topic.days; i++) {
-    roadmapDays.push({
-      day: day++,
-      tasks: [
-        {
-          topic: topic.topic,
-          type: "learning",
-          completed: false
-        }
-      ],
-      status: "pending"
-    });
-  }
-});
-
-      const roadmap = await Roadmap.create({
-        userId: req.user,
-        userMode: "school",
-        careerPath: user.schoolPath,
-        roadmapDays
-      });
-
-      return res.json({ mode: "foundation", roadmap, guidance, currentPath: user.schoolPath });
-    }
-
-    // ====================== COLLEGE / JOB USER ======================
-
-    const skillTree =
-    SKILL_TREES[user.targetRole.toLowerCase()] ||
-    SKILL_TREES["software engineer"];
-    let topics = [];
-
-    skillTree.sections.forEach(section => {
-      section.skills.forEach(skill => {
-        skill.levels.forEach(level => {
-          topics.push({
-            topic: skill.topic,
-            level: level.name,
-            // concept: level.concept,
-            // example: level.example || "",
-            // resources: level.resources || []
-          });
-        });
-      });
-    });
-    const weakTopics = await getWeakTopics(req.user);
-
-    // Boost weak topics by adding them again
-    weakTopics.forEach(weak => {
-    const match = topics.find(t => t.topic === weak);
-    if (match) {
-      topics.unshift(match); // push weak topic earlier
-    }
-    });
-
-
-let roadmapDays = [];
-let counter = 1;
-
-const capacity = user.daysToCrack * user.hoursPerDay;
-
-// Importance ranking
-const importanceMap = {
-  "Arrays": 10,
-  "Strings": 10,
-  "Linked List": 9,
-  "Stack": 9,
-  "Queue": 8,
-  "Trees": 10,
-  "Graphs": 9,
-  "Dynamic Programming": 10,
-  "Greedy": 8,
-  "Backtracking": 8,
-  "Operating Systems": 7,
-  "DBMS": 7,
-  "Computer Networks": 7,
-  "System Design": 6
-};
-
-// Sort by importance
-topics.sort((a, b) => {
-  const impA = importanceMap[a.topic] || 5;
-  const impB = importanceMap[b.topic] || 5;
-  return impB - impA;
-});
-
-// Decide how many topics to include
-let topicsToUse;
-
-// distribute topics based on available time
-
-const totalTopics = topics.length;
-
-const maxTopicsPossible = user.daysToCrack * Math.max(1, user.hoursPerDay);
-
-topicsToUse = topics.slice(0, Math.min(totalTopics, maxTopicsPossible));
-
-if (user.daysToCrack <= 120) {
-
-  let topicIndex = 0;
-
-  for (let day = 1; day <= user.daysToCrack; day++) {
-
-    let tasks = [];
-
-    const topicsPerDay =
-      user.hoursPerDay <= 1 ? 1 :
-      user.hoursPerDay <= 3 ? 2 :
-      3;
-
-    // learning tasks
-    for (let t = 0; t < topicsPerDay; t++) {
+    // 2. Build the AI Prompt
+    // This follows the "No Spoon-feeding" guide: focus on curriculum and objectives.
+    // const prompt = `
+    //   Generate a professional ${user.daysToCrack}-day learning roadmap for a ${user.educationLevel} student 
+    //   aiming to become a ${user.targetRole}. 
       
-      if (topicIndex >= topicsToUse.length) break;
+    //   Format rules:
+    //   - Organize by ${timeLabel}.
+    //   - For each ${isLongTerm ? 'Week' : 'Day'}, provide a clear 'topic'.
+    //   - Provide a specific practical 'task' (e.g., project, lab, or exercise).
+    //   - Provide exactly 3 'concepts' (key technical milestones to master).
+    //   - STRICT: DO NOT provide any website links, YouTube URLs, or external resources.
+      
+    //   Return ONLY a JSON object with a key 'roadmap' containing a list.
+    //   Each item format: {"period": "Week 1/Day 1", "topic": "string", "task": "string", "concepts": ["a", "b", "c"]}
+    // `;
+    // const prompt = `
+    //   Generate a professional ${user.daysToCrack}-day learning curriculum for a ${user.educationLevel} 
+    //   aiming to become a ${user.targetRole}. 
+      
+    //   Formatting & Content Rules:
+    //   1. Organize the curriculum by ${timeLabel}.
+      
+    //   2. For 'topic': Provide a clear, professional title for this phase.
+      
+    //   3. For 'task': Provide a COMPREHENSIVE EXECUTION GUIDE (40-60 words). 
+    //      Do not just give a title. Explain the specific steps the student must take, 
+    //      what they should produce (e.g., a report, a spreadsheet, a code module, or a case study), 
+    //      and how this activity prepares them for a real-world ${user.targetRole} role.
+      
+    //   4. For 'concepts': Provide exactly 3 'Core Pillars of Mastery' (the essential domain knowledge 
+    //      required to successfully complete this phase's task).
+      
+    //   5. STRICT: DO NOT provide any website links, YouTube URLs, or external resources. 
+    //      The student must research the 'How-To' themselves.
+      
+    //   Return ONLY a JSON object with a key 'roadmap' containing a list of objects.
+    //   Format: {"period": "...", "topic": "...", "task": "...", "concepts": ["...", "...", "..."]}
+    // `;
+    const prompt = `
+      Generate a professional ${user.daysToCrack}-day learning curriculum for a ${user.educationLevel} 
+      aiming to become a ${user.targetRole}. 
+      
+      Formatting & Content Rules:
+      1. Organization: Organize the curriculum by ${timeLabel}.
+      
+      2. For 'period' (CRITICAL): 
+         - If the total days (${user.daysToCrack}) is 30 or more: 
+           You MUST generate exactly ONE object for every 7-day block.
+           Label format: "Week X (Days Y-Z)". 
+           Example: "Week 1 (Days 1-7)", "Week 2 (Days 8-14)", "Week 3 (Days 15-21)".
+         - If the total days is less than 30:
+           Label format: "Day X".
+      
+      3. For 'topic': Provide a clear, professional title for this specific unit.
+      
+      4. For 'task': Provide a COMPREHENSIVE EXECUTION GUIDE (40-60 words). 
+         Do not just give a title. Explain the specific steps the student must take, 
+         what they should produce (e.g., a report, a spreadsheet, a code module, or a case study), 
+         and how this activity prepares them for a real-world ${user.targetRole} role.
+      
+      5. For 'concepts': Provide exactly 3 'Core Pillars of Mastery' (domain knowledge required for this unit).
+      
+      6. STRICT: DO NOT provide any website links, YouTube URLs, or external resources. 
+      7. OUTPUT: Return ONLY a JSON object with a key 'roadmap' containing a list of objects.
+      
+      Format: {"period": "Week 1 (Days 1-7)", "topic": "...", "task": "...", "concepts": ["...", "...", "..."]}
+    `;
 
-      const topic = topicsToUse[topicIndex];
+    // 3. Call Groq AI
+    const completion = await groq.chat.completions.create({
+      messages: [{ role: "user", content: prompt }],
+      model: "llama-3.3-70b-versatile",
+      response_format: { type: "json_object" },
+    });
 
-      tasks.push({
-        topic: topic.topic,
-        level: topic.level,
-        type: "learning",
-        completed: false
-      });
+    const aiResponse = JSON.parse(completion.choices[0].message.content);
 
-      topicIndex++;
-
-    }
-
-    // practice task
-    // always add practice task
-    const practiceTopic =
-      tasks.find(t => t.type === "learning")?.topic ||
-      topicsToUse[Math.floor(Math.random() * topicsToUse.length)].topic;
-
-      tasks.push({
-        topic: practiceTopic,
-        type: "practice",
-        completed: false
-      });
-
-    if (tasks.length > 0) {
-
-      roadmapDays.push({
-        day,
-        tasks,
-        status: "pending"
-      });
-
-    }
-
-  }
-
-}
-
-// ====================== WEEKLY ROADMAP ======================
-
-else if (user.daysToCrack <= 365) {
-
-  const totalWeeks = Math.ceil(user.daysToCrack / 7);
-  let topicIndex = 0;
-
-  for (let i = 0; i < totalWeeks; i++) {
-
-    let tasks = [];
-
-    for (let t = 0; t < 5; t++) {
-
-      const topic = topicsToUse[topicIndex % topicsToUse.length];
-
-      tasks.push({
-        topic: topic.topic,
-        level: topic.level,
-        type: "learning",
-        completed: false
-      });
-
-      topicIndex++;
-
-    }
-
-    tasks.push({
-      topic: tasks[0].topic,
-      type: "practice",
+    // 4. Transform AI data into your existing MongoDB Schema format
+    const roadmapDays = aiResponse.roadmap.map((item, index) => ({
+  day: index + 1,
+  label: item.period,
+  tasks: [
+    {
+      topic: item.topic,
+      note: item.task, // The AI's assignment
+      concepts: item.concepts, // The AI's 3-4 mastery goals
+      type: "learning",
       completed: false
-    });
-
-    roadmapDays.push({
-      day: i + 1,
-      label: `Week ${i + 1}`,
-      tasks,
-      status: "pending"
-    });
-
-  }
-
-}
-
-// ====================== MONTHLY ROADMAP ======================
-
-else {
-
-  const totalMonths = Math.ceil(user.daysToCrack / 30);
-  let topicIndex = 0;
-
-  for (let i = 0; i < totalMonths; i++) {
-
-    let tasks = [];
-
-    for (let t = 0; t < 8; t++) {
-
-      const topic = topicsToUse[topicIndex % topicsToUse.length];
-
-      tasks.push({
-        topic: topic.topic,
-        level: topic.level,
-        type: "learning",
-        completed: false
-      });
-
-      topicIndex++;
-
     }
+  ],
+  status: "pending"
+}));
 
-    tasks.push({
-      topic: tasks[0].topic,
-      type: "practice",
-      completed: false
-    });
-
-    roadmapDays.push({
-      day: i + 1,
-      label: `Month ${i + 1}`,
-      tasks,
-      status: "pending"
-    });
-
-  }
-
-}
+    // 5. Create the Roadmap in Database
     const roadmap = await Roadmap.create({
       userId: req.user,
-      userMode: "college",
+      userMode: user.educationLevel,
       careerPath: user.targetRole,
       roadmapDays
     });
@@ -325,11 +136,12 @@ else {
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Roadmap generation failed" });
+    console.error("AI Roadmap Generation Error:", err);
+    res.status(500).json({ message: "Roadmap generation failed. Ensure GROQ_API_KEY is set." });
   }
 };
 
+// ====================== COMPLETE TASK ======================
 exports.completeTask = async (req, res) => {
   try {
     const { day, taskIndex } = req.body;
@@ -356,9 +168,7 @@ exports.completeTask = async (req, res) => {
 
     // check if all tasks are done
     const updatedRoadmap = await Roadmap.findOne({ userId: req.user });
-
     const updatedDay = updatedRoadmap.roadmapDays[dayIndex];
-
     const allCompleted = updatedDay.tasks.every(t => t.completed);
 
     if (allCompleted) {
@@ -375,6 +185,7 @@ exports.completeTask = async (req, res) => {
     res.status(500).json({ message: "Task completion failed" });
   }
 };
+
 // ====================== GET ROADMAP ======================
 exports.getRoadmap = async (req, res) => {
   try {
@@ -384,39 +195,19 @@ exports.getRoadmap = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.educationLevel === "school") {
-      const goalKey = (user.targetRole || "")
-        .toLowerCase()
-        .trim()
-        .replace("developer", "engineer");
-
-      const guidance =
-        SCHOOL_CAREER_PATHS[goalKey] || {
-          goal: user.targetRole,
-          description: "Career guidance will be added soon.",
-          paths: []
-        };
-
-      if (!user.schoolPath) {
-        return res.json({ mode: "school", guidance });
-      }
-
-      const roadmap = await Roadmap.findOne({ userId: req.user });
-
-      return res.json({ mode: "foundation", roadmap, guidance, currentPath: user.schoolPath });
-    }
-
     const roadmap = await Roadmap.findOne({ userId: req.user });
-
-    return res.json({ mode: "roadmap", roadmap });
+    
+    // If roadmap doesn't exist, we return a 200 with null to let frontend handle "Not Generated" state
+    return res.json({ 
+      mode: user.educationLevel === "school" ? "foundation" : "roadmap", 
+      roadmap 
+    });
 
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
 
 // ====================== ROADMAP PROGRESS ======================
 exports.getRoadmapProgress = async (req, res) => {
@@ -439,9 +230,7 @@ exports.getRoadmapProgress = async (req, res) => {
     res.json({
       totalDays,
       completedDays,
-      progressPercent: Math.round(
-        (completedDays / totalDays) * 100
-      )
+      progressPercent: Math.round((completedDays / totalDays) * 100)
     });
 
   } catch (err) {
@@ -449,30 +238,27 @@ exports.getRoadmapProgress = async (req, res) => {
   }
 };
 
-
-
 // ====================== COMPLETE DAY ======================
 exports.completeDay = async (req, res) => {
   try {
     const { day } = req.body;
-
     const roadmap = await Roadmap.findOne({ userId: req.user });
 
     if (!roadmap) {
       return res.status(404).json({ message: "Roadmap not found" });
     }
 
-    const targetDay = roadmap.roadmapDays.find(
-      d => d.day === day
-    );
+    const targetDay = roadmap.roadmapDays.find(d => d.day === day);
 
     if (!targetDay) {
       return res.status(404).json({ message: "Day not found" });
     }
 
     targetDay.status = "completed";
-    await roadmap.save();
+    // Also mark all tasks in that day as completed
+    targetDay.tasks.forEach(t => t.completed = true);
 
+    await roadmap.save();
     res.json({ message: `Day ${day} marked as completed` });
 
   } catch (err) {
@@ -480,10 +266,9 @@ exports.completeDay = async (req, res) => {
   }
 };
 
-
+// ====================== ADAPTIVE PRACTICE ======================
 exports.getPracticeForToday = async (req, res) => {
   try {
-
     const roadmap = await Roadmap.findOne({ userId: req.user });
 
     if (!roadmap || !roadmap.roadmapDays.length) {
@@ -497,70 +282,37 @@ exports.getPracticeForToday = async (req, res) => {
       return res.json({ questions: [] });
     }
 
-    // ----------------------------
-    // collect today's topics
-    // ----------------------------
     const topics = today.tasks.map(t => t.topic).filter(Boolean);
 
     if (!topics.length) {
       return res.json({ questions: [] });
     }
 
-    // ----------------------------
-    // detect weak topics
-    // ----------------------------
     const weakTopics = await getWeakTopics(req.user);
-
-    // ----------------------------
-    // build weighted topic list
-    // weak topics appear 3x more
-    // ----------------------------
     let weightedTopics = [];
 
     topics.forEach(topic => {
-
       if (weakTopics.includes(topic)) {
-
         weightedTopics.push(topic, topic, topic);
-
       } else {
-
         weightedTopics.push(topic);
-
       }
-
     });
 
-    // ----------------------------
-    // pick random topic
-    // ----------------------------
-    const topicName =
-      weightedTopics[Math.floor(Math.random() * weightedTopics.length)];
-
-    // ----------------------------
-    // fetch problems from bank
-    // ----------------------------
+    const topicName = weightedTopics[Math.floor(Math.random() * weightedTopics.length)];
     const attempts = await Attempt.find({ userId: req.user });
 
-const problems = await getAdaptivePractice(
-  topicName,
-  attempts,
-  PROBLEM_BANK
-);
+    const problems = await getAdaptivePractice(
+      topicName,
+      attempts,
+      PROBLEM_BANK
+    );
 
-    // return first 3 problems
     const shuffled = problems.sort(() => 0.5 - Math.random());
-const selectedProblems = shuffled.slice(0, 3).map(p => ({
-  ...p,
-  topic: topicName
-}));
-
-    // ----------------------------
-    // debug logs (remove later)
-    // ----------------------------
-    console.log("Today's topics:", topics);
-    console.log("Weak topics:", weakTopics);
-    console.log("Selected practice topic:", topicName);
+    const selectedProblems = shuffled.slice(0, 3).map(p => ({
+      ...p,
+      topic: topicName
+    }));
 
     res.json({
       topic: topicName,
@@ -568,22 +320,14 @@ const selectedProblems = shuffled.slice(0, 3).map(p => ({
     });
 
   } catch (err) {
-
     console.error(err);
-
-    res.status(500).json({
-      message: "Practice load failed"
-    });
-
+    res.status(500).json({ message: "Practice load failed" });
   }
 };
-
-
 
 // ====================== TODAY TOPIC ======================
 exports.getTodayTopic = async (req, res) => {
   try {
-
     const roadmap = await Roadmap.findOne({ userId: req.user });
 
     if (!roadmap || !roadmap.roadmapDays.length) {
@@ -600,5 +344,32 @@ exports.getTodayTopic = async (req, res) => {
 
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch today's tasks" });
+  }
+};
+exports.followRoadmap = async (req, res) => {
+  try {
+    const { targetRoadmapId } = req.body;
+    
+    const sourceRoadmap = await Roadmap.findById(targetRoadmapId);
+    if (!sourceRoadmap) return res.status(404).json({ message: "Roadmap not found" });
+
+    // Delete your current plan
+    await Roadmap.deleteMany({ userId: req.user });
+
+    // Create a new one for you using THEIR steps
+    const newRoadmap = await Roadmap.create({
+      userId: req.user,
+      careerPath: sourceRoadmap.careerPath,
+      userMode: sourceRoadmap.userMode,
+      roadmapDays: sourceRoadmap.roadmapDays.map(day => ({
+        ...day.toObject(),
+        status: "pending", // Reset progress for the new user
+        tasks: day.tasks.map(t => ({ ...t.toObject(), completed: false }))
+      }))
+    });
+
+    res.json({ message: "You are now following this roadmap!", roadmap: newRoadmap });
+  } catch (err) {
+    res.status(500).json({ message: "Follow action failed" });
   }
 };

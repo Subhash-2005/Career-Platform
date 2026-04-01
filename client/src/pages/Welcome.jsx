@@ -23,8 +23,8 @@ const Welcome = () => {
       {/* Navigation */}
       <nav className="welcome-nav">
         <Link to="/" className="welcome-logo">
-          <div className="logo-cube">C</div>
-          Career Planner
+          <div className="logo-cube">S</div>
+          Skill Path
         </Link>
         <div className="nav-links">
           <a href="#features" className="nav-link">Features</a>
