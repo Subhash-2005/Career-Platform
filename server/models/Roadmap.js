@@ -38,6 +38,15 @@ const RoadmapSchema = new mongoose.Schema({
   },
   userMode: String, // school, college, or professional
   careerPath: String, // The Target Role
+  aiMessage: String,
+  careerPaths: [
+    {
+      title: String,
+      stream: String,
+      exams: [String],
+      milestones: [String]
+    }
+  ],
   roadmapDays: [RoadmapDaySchema]
 }, { timestamps: true });
 

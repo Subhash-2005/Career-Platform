@@ -20,82 +20,97 @@ exports.generateRoadmap = async (req, res) => {
     }
 
     // Clear old data to start fresh for the new AI roadmap
-    await Attempt.deleteMany({ userId: req.user });
-    await MockInterview.deleteMany({ userId: req.user });
-    await Roadmap.deleteMany({ userId: req.user });
-
+    await Promise.all([
+      Attempt.deleteMany({ userId: req.user }),
+      MockInterview.deleteMany({ userId: req.user }),
+      Roadmap.deleteMany({ userId: req.user })
+    ]);
+    let effectiveDays = user.daysToCrack;
+    if (user.educationLevel === "school") {
+      // School students get a 60-day "Level 1: Discovery" path by default
+      effectiveDays = 60; 
+    }
     // 1. Determine the structure based on duration
-    const isLongTerm = user.daysToCrack >= 30;
+    const isLongTerm = effectiveDays >= 30;
     const timeLabel = isLongTerm ? "WEEKLY PHASES" : "DAILY STEPS";
-
-    // 2. Build the AI Prompt
-    // This follows the "No Spoon-feeding" guide: focus on curriculum and objectives.
-    // const prompt = `
-    //   Generate a professional ${user.daysToCrack}-day learning roadmap for a ${user.educationLevel} student 
-    //   aiming to become a ${user.targetRole}. 
-      
-    //   Format rules:
-    //   - Organize by ${timeLabel}.
-    //   - For each ${isLongTerm ? 'Week' : 'Day'}, provide a clear 'topic'.
-    //   - Provide a specific practical 'task' (e.g., project, lab, or exercise).
-    //   - Provide exactly 3 'concepts' (key technical milestones to master).
-    //   - STRICT: DO NOT provide any website links, YouTube URLs, or external resources.
-      
-    //   Return ONLY a JSON object with a key 'roadmap' containing a list.
-    //   Each item format: {"period": "Week 1/Day 1", "topic": "string", "task": "string", "concepts": ["a", "b", "c"]}
-    // `;
     // const prompt = `
     //   Generate a professional ${user.daysToCrack}-day learning curriculum for a ${user.educationLevel} 
     //   aiming to become a ${user.targetRole}. 
       
     //   Formatting & Content Rules:
-    //   1. Organize the curriculum by ${timeLabel}.
+    //   1. Organization: Organize the curriculum by ${timeLabel}.
       
-    //   2. For 'topic': Provide a clear, professional title for this phase.
+    //   2. For 'period' (CRITICAL): 
+    //      - If the total days (${user.daysToCrack}) is 30 or more: 
+    //        You MUST generate exactly ONE object for every 7-day block.
+    //        Label format: "Week X (Days Y-Z)". 
+    //        Example: "Week 1 (Days 1-7)", "Week 2 (Days 8-14)", "Week 3 (Days 15-21)".
+    //      - If the total days is less than 30:
+    //        Label format: "Day X".
       
-    //   3. For 'task': Provide a COMPREHENSIVE EXECUTION GUIDE (40-60 words). 
+    //   3. For 'topic': Provide a clear, professional title for this specific unit.
+      
+    //   4. For 'task': Provide a COMPREHENSIVE EXECUTION GUIDE (40-60 words). 
     //      Do not just give a title. Explain the specific steps the student must take, 
     //      what they should produce (e.g., a report, a spreadsheet, a code module, or a case study), 
     //      and how this activity prepares them for a real-world ${user.targetRole} role.
       
-    //   4. For 'concepts': Provide exactly 3 'Core Pillars of Mastery' (the essential domain knowledge 
-    //      required to successfully complete this phase's task).
+    //   5. For 'concepts': Provide exactly 3 'Core Pillars of Mastery' (domain knowledge required for this unit).
       
-    //   5. STRICT: DO NOT provide any website links, YouTube URLs, or external resources. 
-    //      The student must research the 'How-To' themselves.
+    //   6. STRICT: DO NOT provide any website links, YouTube URLs, or external resources. 
+    //   7. OUTPUT: Return ONLY a JSON object with a key 'roadmap' containing a list of objects.
       
-    //   Return ONLY a JSON object with a key 'roadmap' containing a list of objects.
-    //   Format: {"period": "...", "topic": "...", "task": "...", "concepts": ["...", "...", "..."]}
+    //   Format: {"period": "Week 1 (Days 1-7)", "topic": "...", "task": "...", "concepts": ["...", "...", "..."]}
     // `;
     const prompt = `
-      Generate a professional ${user.daysToCrack}-day learning curriculum for a ${user.educationLevel} 
+      Generate a professional ${effectiveDays}-day learning curriculum for a ${user.educationLevel} 
       aiming to become a ${user.targetRole}. 
       
+      CAREER GUIDANCE LOGIC (CRITICAL):
+      - If the user is a "school" student (Class ${user.schoolClass}):
+        1. Act as a Realistic Career Counselor. Explain that their primary goal is finishing 10th grade.
+        2. DYNAMIC CAREER TREE (THE "MULTIPLE DOORS" LOGIC): In the "careerPaths" field, generate 3 distinct, academically valid educational "forks" available after 10th grade.
+           - SHOWING OPTIONS: If a goal (like Chef, Designer, or Engineer) can be reached by BOTH finishing 12th grade AND by doing a Diploma after 10th, SHOW BOTH as separate, correct paths.
+           - NO DEFAULT TO 12th: Do not force "Completing 12th Grade" if a legal shortcut (like Polytechnic or a Craft Diploma) exists for ${user.targetRole}.
+           - MANDATORY PATHS: If 12th Grade is a strict legal requirement by law (like for a Doctor or Lawyer), explicitly list it as the mandatory path.
+           - For each path, logically determine the stream (MPC, BiPC, CEC, MEC, or Arts) and relevant Indian entrance exams (JEE, NEET, UCEED, NID, CLAT, etc.).
+        3. Treat this roadmap as "Phase 1: Foundation Practice." Focus on age-appropriate logic and theory they can practice for ${user.hoursPerDay} hour(s) a day.
+        4. STUDENT-LEVEL PROJECTS: DO NOT mention "Resumes", "Portfolios", "Job Search", or "Entry-level positions". Instead, suggest "Personal Projects" or "Creative Sketches" (e.g., "Redesign a screen of your favorite game" or "Write a logic puzzle").
+      - If not a school student:
+        1. Provide a professional growth ladder or industry summary in the "message" field.
+        2. Generate 2-3 professional specializations or career levels in "careerPaths".
+
       Formatting & Content Rules:
       1. Organization: Organize the curriculum by ${timeLabel}.
       
       2. For 'period' (CRITICAL): 
-         - If the total days (${user.daysToCrack}) is 30 or more: 
-           You MUST generate exactly ONE object for every 7-day block.
-           Label format: "Week X (Days Y-Z)". 
-           Example: "Week 1 (Days 1-7)", "Week 2 (Days 8-14)", "Week 3 (Days 15-21)".
-         - If the total days is less than 30:
-           Label format: "Day X".
+          - If the total days (${effectiveDays}) is 30 or more: 
+            You MUST generate exactly ONE object for every 7-day block.
+            Label format: "Week X (Days Y-Z)". 
+            Example: "Week 1 (Days 1-7)", "Week 2 (Days 8-14)", "Week 3 (Days 15-21)".
+          - If the total days is less than 30:
+            Label format: "Day X".
       
       3. For 'topic': Provide a clear, professional title for this specific unit.
       
       4. For 'task': Provide a COMPREHENSIVE EXECUTION GUIDE (40-60 words). 
-         Do not just give a title. Explain the specific steps the student must take, 
-         what they should produce (e.g., a report, a spreadsheet, a code module, or a case study), 
-         and how this activity prepares them for a real-world ${user.targetRole} role.
+          Do not just give a title. Explain the specific steps the student must take, 
+          what they should produce (e.g., a report, a spreadsheet, a code module, or a case study), 
+          and how this activity prepares them for a real-world ${user.targetRole} role.
+          - NOTE: For school students, replace "Professional Deliverables" with "Learning Artifacts" (e.g., a hand-drawn sketch, a logic flowchart, or a short observation summary).
       
       5. For 'concepts': Provide exactly 3 'Core Pillars of Mastery' (domain knowledge required for this unit).
       
       6. STRICT: DO NOT provide any website links, YouTube URLs, or external resources. 
-      7. OUTPUT: Return ONLY a JSON object with a key 'roadmap' containing a list of objects.
+      7. OUTPUT: Return ONLY a JSON object with keys: 'message', 'careerPaths', and 'roadmap'.
       
-      Format: {"period": "Week 1 (Days 1-7)", "topic": "...", "task": "...", "concepts": ["...", "...", "..."]}
+      Format: {
+        "message": "Advice here...",
+        "careerPaths": [{ "title": "...", "stream": "...", "exams": [], "milestones": ["10th Grade", "Next Step", "Final Qualification"] }],
+        "roadmap": [{"period": "Week 1 (Days 1-7)", "topic": "...", "task": "...", "concepts": ["...", "...", "..."]}]
+      }
     `;
+    
 
     // 3. Call Groq AI
     const completion = await groq.chat.completions.create({
@@ -127,6 +142,8 @@ exports.generateRoadmap = async (req, res) => {
       userId: req.user,
       userMode: user.educationLevel,
       careerPath: user.targetRole,
+      aiMessage: aiResponse.message,
+      careerPaths: aiResponse.careerPaths || [],
       roadmapDays
     });
 

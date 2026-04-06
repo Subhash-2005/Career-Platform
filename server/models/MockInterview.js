@@ -6,27 +6,37 @@ const MockInterviewSchema = new mongoose.Schema({
     ref: "User",
     required: true
   },
+  
+  targetRole: String,
 
-  questions: [
+  chatHistory: [
     {
-      questionId: {
-        type: String
-      },
+      // NEW: Added 'step' to track Q1, Q2, etc. easily in the UI
+      step: Number, 
+      question: String,
       userAnswer: String,
-      category: String, // coding / cs / hr
+      category: String,
+      feedback: String,
       score: Number
     }
   ],
 
-  totalScore: Number,
+  status: {
+    type: String,
+    enum: ["in-progress", "completed"],
+    default: "in-progress"
+  },
 
+  totalScore: Number,
   strengths: [String],
   weaknesses: [String],
+  
+  mentorTips: String,
 
   createdAt: {
     type: Date,
     default: Date.now
   }
-});
+}); // Removed _id:false from sub-docs to allow easy updates if needed later
 
 module.exports = mongoose.model("MockInterview", MockInterviewSchema);

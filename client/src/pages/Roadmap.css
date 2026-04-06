@@ -429,3 +429,29 @@
 @keyframes slideInUp {
   to { opacity: 1; transform: translateY(0); }
 }
+.career-tree-container {
+  margin-top: 20px;
+}
+
+.path-card {
+  transition: transform 0.2s ease;
+}
+
+.path-card:hover {
+  transform: translateY(-5px);
+}
+
+.milestone-flow {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.concept-tag {
+  transition: all 0.2s;
+}
+
+.concept-tag:hover {
+  background: #e2e8f0 !important;
+  color: #1e293b !important;
+}
